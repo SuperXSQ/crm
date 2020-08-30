@@ -10,6 +10,7 @@
   <!--起别名-->
   <typeAliases>
   	<package name="cn.xsq.crm.settings.domain"/>
+    <package name="cn.xsq.crm.workbench.domain"/>
   </typeAliases>
   
   <environments default="development">
@@ -28,6 +29,7 @@
   <mappers>
    
       <package name="cn.xsq.crm.settings.dao"/>
+      <package name="cn.xsq.crm.workbench.dao"/>
     
   </mappers>
 </configuration>

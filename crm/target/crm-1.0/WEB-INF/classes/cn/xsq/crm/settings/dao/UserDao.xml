@@ -5,8 +5,12 @@
 
 <mapper namespace="cn.xsq.crm.settings.dao.UserDao">
 	
-	<select id="login" resultType="cn.xsq.crm.settings.domain.User">
+	<select id="login" resultType="User">
         select * from tbl_user where loginAct = #{loginAct} and loginPwd = #{loginPwd}
+    </select>
+
+    <select id="findAll" resultType="User">
+        select * from tbl_user
     </select>
 	
 </mapper>

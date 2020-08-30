@@ -8,12 +8,12 @@ import cn.xsq.crm.utils.DateTimeUtil;
 import cn.xsq.crm.utils.SqlSessionUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UserServiceImpl implements UserService {
 
     private UserDao userDao = SqlSessionUtil.getSqlSession().getMapper(UserDao.class);
-
 
 
     public User login(String loginAct, String loginPwd, String ip) throws LoginFailureException {
@@ -46,5 +46,12 @@ public class UserServiceImpl implements UserService {
         }
 
         return user;
+    }
+
+    @Override
+    public List<User> findAll() {
+
+        List<User> users = userDao.findAll();
+        return users;
     }
 }

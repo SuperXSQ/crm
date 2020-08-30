@@ -12,7 +12,15 @@
   <servlet-mapping>
     <servlet-name>UserController</servlet-name>
     <url-pattern>/settings/user/login.do</url-pattern>
-    
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ActivityController</servlet-name>
+    <servlet-class>cn.xsq.crm.workbench.web.controller.ActivityController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ActivityController</servlet-name>
+    <url-pattern>/workbench/activity/findAll.do</url-pattern>
   </servlet-mapping>
 
   <!--过滤器-->
@@ -22,6 +30,16 @@
   </filter>
   <filter-mapping>
     <filter-name>EncodingFilter</filter-name>
+    <url-pattern>*.do</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>LoginFilter</filter-name>
+    <filter-class>cn.xsq.crm.web.filter.LoginFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>LoginFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
     <url-pattern>*.do</url-pattern>
   </filter-mapping>
   
