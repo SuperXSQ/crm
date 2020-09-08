@@ -5,9 +5,11 @@
 
 <mapper namespace="cn.xsq.crm.workbench.dao.ActivityRemarkDao">
 	
+	<!--
 	<select id="" resultType="">
 
     </select>
+    -->
 
 </mapper>
 

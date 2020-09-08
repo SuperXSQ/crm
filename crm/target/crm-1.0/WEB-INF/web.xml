@@ -21,6 +21,8 @@
   <servlet-mapping>
     <servlet-name>ActivityController</servlet-name>
     <url-pattern>/workbench/activity/findAll.do</url-pattern>
+    <url-pattern>/workbench/activity/save.do</url-pattern>
+    <url-pattern>/workbench/activity/pageList.do</url-pattern>
   </servlet-mapping>
 
   <!--过滤器-->
