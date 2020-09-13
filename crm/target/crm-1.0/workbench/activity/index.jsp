@@ -139,20 +139,6 @@
         })
 
         //为删除按钮绑定事件，触发批量删除操作（1.不选  2.选一条  3.选多条）
-        $("#deleteBtn").click(function () {
-
-            $.ajax({
-                url : "workbench/activity/delete.do",
-                dataType : "text",
-                type : "post",
-                //$("input[name=check]:checked")
-                data : "",
-                success : function () {
-
-                }
-            })
-
-        })
 
 
 
@@ -439,7 +425,7 @@
 				<div class="btn-group" style="position: relative; top: 18%;">
 				  <button type="button" class="btn btn-primary" id="addBtn"><span class="glyphicon glyphicon-plus"></span> 创建</button>
 				  <button type="button" class="btn btn-default" id="editBtn"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
-				  <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
 				
 			</div>
