@@ -36,9 +36,14 @@
 		});
 
 
+        //页面加载后自动执行一个方法来刷新列表
+        pageList(1, 2);
+
+
+		//点击创建弹出模态窗口
 		$("#addBtn").click(function () {
 
-			//查询所有者的姓名
+			//查询全部的所有者的姓名
 			$.ajax({
 				url : "workbench/activity/findAll.do",
 				dataType : "json",
@@ -81,10 +86,15 @@
 					//{"success":true/false}
 					if (data.success) {
 						//如果返回true，刷新列表
-
 						alert("保存成功");
+                        //刷新列表
+                        //pageList(1,2);
+                        //页码返回到第一页，每页显示的条数维持当前设置
+                        pageList(1
+                            ,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
 
-						//reset模态窗口中已经填写的数据
+
+                        //reset模态窗口中已经填写的数据
 						//先把jquery对象转成dom对象才有reset方法
 						$("#form")[0].reset();
 
@@ -98,9 +108,6 @@
 			})
 		})
 
-		//页面加载后自动执行一个方法来刷新列表
-		pageList(1, 2);
-
 		//为查询按钮绑定查询刷新列表事件
 		$("#search-btn").click(function () {
 
@@ -110,9 +117,12 @@
 			$("#hidden-startDate").val($.trim($("#search-startDate").val()));
 			$("#hidden-endDate").val($.trim($("#search-endDate").val()));
 
-			pageList(1 ,2);
+			//pageList(1 ,2);
+            pageList(1
+                ,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
 
-		})
+
+        })
 
         /*
             以下是对复选款的操作
@@ -139,12 +149,135 @@
         })
 
         //为删除按钮绑定事件，触发批量删除操作（1.不选  2.选一条  3.选多条）
+        $("#deleteBtn").click(function () {
+
+			//$("input[name=check]:checked") 这个jquery对象是这个数组，里面是所有符合条件的对象
+			var $obj = $("input[name=check]:checked");
+			var text = "";
+
+			$.each($obj, function (i, n) {
+				text += "id="+n.value;
+
+				//i是每个元素的下标 下标=长度-1  就是最后一个元素 这时不加&符号
+				if(i != $obj.length-1){
+					text += "&";
+				}
+			})
+
+			alert(text);
+
+            $.ajax({
+                url : "workbench/activity/delete.do",
+                dataType : "json",
+                type : "post",
+				//id:  &id:  &id:
+                data : text,
+                success : function (data) {
+                	//"success":true/false
+					if(data.success){
+						alert("已成功删除"+$obj.length+"条记录！");
+
+						//pageList(1,2);
+                        pageList(1
+                            ,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
 
 
+                    }else alert("删除失败！");
+                }
+            })
+        })
 
+
+		//为修改按钮绑定单击事件
+		$("#editBtn").click(function () {
+
+			if ($("input[name=check]:checked").length == 1){
+
+				//查询全部的所有者去填充所有者下拉框
+				$.ajax({
+					url : "workbench/activity/findAll.do",
+					dataType : "json",
+					success : function (data) {
+
+						var html = "";
+
+						$.each(data, function (i, n) {
+							html += "<option value='" + n.id + "'>" + n.name + "</option>";
+						})
+
+						$("#edit-owner").html(html);
+					}
+				})
+
+				var text = "id=" + $("input[name=check]:checked").val();
+
+				$.ajax({
+					url : "workbench/activity/findByCheck.do",
+					dataType : "json",
+					type : "get",
+					data : text,
+					success : function (data) {
+						//{"owner":"张三", "name":"发传单", "startDate":"", "endDate":""...}
+						//填充修改市场活动的模态窗口中的其他信息
+						$("#edit-owner").val(data.owner);
+						$("#edit-name").val(data.name);
+						$("#edit-startDate").val(data.startDate);
+						$("#edit-endDate").val(data.endDate);
+						$("#edit-cost").val(data.cost);
+						$("#edit-description").val(data.description);
+					}
+				})
+
+				//打开修改的模态窗口
+				$("#editActivityModal").modal("show");
+
+			}else alert("请选择一项修改！");
+		})
+
+
+		//点击修改模态窗口的中的更新  将信息保存到后台数据库，然后关闭模态窗口
+		$("#updateBtn").click(function () {
+
+			//把Activity的id传到后端，通过id来保存记录
+			var id = $("input[name=check]:checked").val();
+
+			$.ajax({
+				url : "workbench/activity/update.do",
+				dataType : "json",
+				type : "post",
+				data : {
+					"id" : id,
+					"owner" : $("#edit-owner").val(), //val() 就是取的<option>中value的值 是所有者的id
+					"name" : $.trim($("#edit-name").val()),
+					"startDate" : $.trim($("#edit-startDate").val()),
+					"endDate" : $.trim($("#edit-endDate").val()),
+					"cost" : $.trim($("#edit-cost").val()),
+					"description" : $.trim($("#edit-description").val()) //textarea标签对 用val()函数赋值
+				},
+				success : function (data) {
+					if (data.success) {
+						alert("修改成功！");
+
+						//刷新列表
+						//pageList(1,2);
+                        //列表停留在当前页 并且每页的显示条数维持当前的设置
+                        pageList($("#activityPage").bs_pagination('getOption', 'currentPage')
+                            ,$("#activityPage").bs_pagination('getOption', 'rowsPerPage'));
+
+
+                        //关闭模态窗口
+						$("#editActivityModal").modal("hide");
+
+					} else alert("修改失败！");
+				}
+			});
+		});
 	});
 
 	function pageList(pageNo, pageSize) {
+
+		//每次刷新列表的时候都重置复选框里的✓
+		$("#checkAll").prop("checked", false);
 
 		$("#search-name").val($("#hidden-name").val());
 		$("#search-owner").val($("#hidden-owner").val());
@@ -198,7 +331,9 @@
 
                     html += '<tr class="active">';
                     html += '<td><input type="checkbox" name="check" value="'+n.id+'"/></td>';
-                    html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.jsp\';">' + n.name + '</a></td>';
+                    //这里可以把单击事件单独拿出来 单击的时候把id保存到session域中 跳转页面后取出，就可以在别的页面中通过activity的id查询 然后返回的时候删除
+                    //！想多了。。。直接在跳转页面的时候在路径后面带上参数就可以了  workbench/activity/detail.do?id=XXX  然后请求转发到detail.jsp
+                    html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.do?id=" + n.id + "\';">' + n.name + '</a></td>';
                     html += '<td>'+ n.owner +'</td>';
                     html += '<td>'+ n.startDate +'</td>';
                     html += '<td>'+ n.endDate +'</td>';
@@ -231,7 +366,7 @@
 					}
 				});
 			}
-		})
+		});
 	}
 	
 </script>
@@ -320,45 +455,45 @@
 				</div>
 				<div class="modal-body">
 				
-					<form class="form-horizontal" role="form">
+					<form class="form-horizontal" role="form" id="edit-form">
 					
 						<div class="form-group">
 							<label for="edit-marketActivityOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="edit-marketActivityOwner">
-								  <option>zhangsan</option>
+								<select class="form-control" id="edit-owner">
+								  <%--<option>zhangsan</option>
 								  <option>lisi</option>
-								  <option>wangwu</option>
+								  <option>wangwu</option>--%>
 								</select>
 							</div>
                             <label for="edit-marketActivityName" class="col-sm-2 control-label">名称<span style="font-size: 15px; color: red;">*</span></label>
                             <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-marketActivityName" value="发传单">
+                                <input type="text" class="form-control" id="edit-name">
                             </div>
 						</div>
 
 						<div class="form-group">
 							<label for="edit-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-startTime" value="2020-10-10">
+								<input type="text" class="form-control time" id="edit-startDate">
 							</div>
 							<label for="edit-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-endTime" value="2020-10-20">
+								<input type="text" class="form-control time" id="edit-endDate">
 							</div>
 						</div>
 						
 						<div class="form-group">
 							<label for="edit-cost" class="col-sm-2 control-label">成本</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="edit-cost" value="5,000">
+								<input type="text" class="form-control" id="edit-cost">
 							</div>
 						</div>
 						
 						<div class="form-group">
 							<label for="edit-describe" class="col-sm-2 control-label">描述</label>
 							<div class="col-sm-10" style="width: 81%;">
-								<textarea class="form-control" rows="3" id="edit-describe">市场活动Marketing，是指品牌主办或参与的展览会议与公关市场活动，包括自行主办的各类研讨会、客户交流会、演示会、新产品发布会、体验会、答谢会、年会和出席参加并布展或演讲的展览会、研讨会、行业交流会、颁奖典礼等</textarea>
+								<textarea class="form-control" rows="3" id="edit-description"></textarea>
 							</div>
 						</div>
 						
@@ -367,7 +502,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">更新</button>
+					<button type="button" class="btn btn-primary" id="updateBtn">更新</button>
 				</div>
 			</div>
 		</div>
@@ -425,7 +560,7 @@
 				<div class="btn-group" style="position: relative; top: 18%;">
 				  <button type="button" class="btn btn-primary" id="addBtn"><span class="glyphicon glyphicon-plus"></span> 创建</button>
 				  <button type="button" class="btn btn-default" id="editBtn"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
-				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
+				  <button type="button" class="btn btn-danger" id="deleteBtn"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
 				
 			</div>

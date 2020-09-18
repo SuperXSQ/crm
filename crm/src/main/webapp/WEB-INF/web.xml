@@ -23,6 +23,10 @@
     <url-pattern>/workbench/activity/findAll.do</url-pattern>
     <url-pattern>/workbench/activity/save.do</url-pattern>
     <url-pattern>/workbench/activity/pageList.do</url-pattern>
+    <url-pattern>/workbench/activity/delete.do</url-pattern>
+    <url-pattern>/workbench/activity/findByCheck.do</url-pattern>
+    <url-pattern>/workbench/activity/update.do</url-pattern>
+    <url-pattern>/workbench/activity/detail.do</url-pattern>
   </servlet-mapping>
 
   <!--过滤器-->

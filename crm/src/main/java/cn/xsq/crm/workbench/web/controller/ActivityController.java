@@ -1,6 +1,8 @@
 package cn.xsq.crm.workbench.web.controller;
 
+import cn.xsq.crm.exception.DeleteException;
 import cn.xsq.crm.exception.SaveException;
+import cn.xsq.crm.exception.UpdateException;
 import cn.xsq.crm.settings.domain.User;
 import cn.xsq.crm.settings.service.UserService;
 import cn.xsq.crm.settings.service.impl.UserServiceImpl;
@@ -32,7 +34,6 @@ public class ActivityController extends HttpServlet {
         String path = request.getServletPath();
 
         if ("/workbench/activity/findAll.do".equals(path)){
-
             findAll(request, response);
         }
 
@@ -43,6 +44,105 @@ public class ActivityController extends HttpServlet {
         if ("/workbench/activity/pageList.do".equals(path)){
             pageList(request, response);
         }
+
+        if ("/workbench/activity/delete.do".equals(path)){
+            deleteById(request, response);
+        }
+
+        if("/workbench/activity/findByCheck.do".equals(path)){
+            findByCheck(request, response);
+        }
+
+        if("/workbench/activity/update.do".equals(path)){
+            update(request, response);
+        }
+
+        if ("/workbench/activity/detail.do".equals(path)){
+            detail(request, response);
+        }
+    }
+
+    private void detail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        System.out.println("进入到 detail控制台了");
+        request.getRequestDispatcher("workbench/activity/detail.jsp").forward(request, response);
+    }
+
+    private void update(HttpServletRequest request, HttpServletResponse response) {
+
+        String id = request.getParameter("id");
+        String owner = request.getParameter("owner"); //传的就是user的id
+        String name = request.getParameter("name");
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
+        String cost = request.getParameter("cost");
+        String description = request.getParameter("description");
+        String editTime = DateTimeUtil.getSysTime(); //修改时间 是当前系统时间
+        String editBy = ((User)request.getSession().getAttribute("user")).getName(); //修改人 是当前登录的用户的名字
+
+        Activity a = new Activity();
+        a.setId(id);
+        a.setOwner(owner);
+        a.setName(name);
+        a.setStartDate(startDate);
+        a.setEndDate(endDate);
+        a.setCost(cost);
+        a.setDescription(description);
+        a.setEditTime(editTime);
+        a.setEditBy(editBy);
+
+        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+
+        boolean flag = false;
+
+        try {
+
+            flag = as.update(a);
+
+            PrintJson.printJsonFlag(response, flag);
+
+        } catch (UpdateException e) {
+
+            e.getMessage();
+
+            PrintJson.printJsonFlag(response, flag);
+        }
+
+    }
+
+    private void findByCheck(HttpServletRequest request, HttpServletResponse response) {
+
+        //获取前端传来的id参数
+        String id = request.getParameter("id");
+
+        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+
+        Activity activity = as.findByCheck(id);
+
+        PrintJson.printJsonObj(response, activity);
+    }
+
+
+    private void deleteById(HttpServletRequest request, HttpServletResponse response) {
+
+        String[] ids = request.getParameterValues("id");
+
+        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+
+        boolean flag = false;
+
+        try {
+            flag = as.deleteById(ids);
+
+            PrintJson.printJsonFlag(response, flag);
+
+        }catch (DeleteException e){
+
+            e.getMessage();
+
+            PrintJson.printJsonFlag(response, flag);
+        }
+
     }
 
     private void pageList(HttpServletRequest request, HttpServletResponse response) {
