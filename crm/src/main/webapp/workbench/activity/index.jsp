@@ -333,7 +333,7 @@
                     html += '<td><input type="checkbox" name="check" value="'+n.id+'"/></td>';
                     //这里可以把单击事件单独拿出来 单击的时候把id保存到session域中 跳转页面后取出，就可以在别的页面中通过activity的id查询 然后返回的时候删除
                     //！想多了。。。直接在跳转页面的时候在路径后面带上参数就可以了  workbench/activity/detail.do?id=XXX  然后请求转发到detail.jsp
-                    html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.do?id=" + n.id + "\';">' + n.name + '</a></td>';
+                    html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.do?id=' + n.id + '\';">' + n.name + '</a></td>';
                     html += '<td>'+ n.owner +'</td>';
                     html += '<td>'+ n.startDate +'</td>';
                     html += '<td>'+ n.endDate +'</td>';

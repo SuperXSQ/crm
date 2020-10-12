@@ -17,4 +17,6 @@ public interface ActivityDao {
     Activity findByCheck(String id);
 
     int update(Activity a);
+
+    Activity detail(String aid);
 }

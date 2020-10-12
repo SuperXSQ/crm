@@ -12,6 +12,7 @@ import cn.xsq.crm.utils.ServiceFactory;
 import cn.xsq.crm.utils.UUIDUtil;
 import cn.xsq.crm.vo.PageVo;
 import cn.xsq.crm.workbench.domain.Activity;
+import cn.xsq.crm.workbench.domain.ActivityRemark;
 import cn.xsq.crm.workbench.service.ActivityService;
 import cn.xsq.crm.workbench.service.impl.ActivityServiceImpl;
 
@@ -60,12 +61,39 @@ public class ActivityController extends HttpServlet {
         if ("/workbench/activity/detail.do".equals(path)){
             detail(request, response);
         }
+
+        if ("/workbench/activity/getRemarkListByAid.do".equals(path)){
+            getRemarkListByAid(request, response);
+        }
     }
+
+    private void getRemarkListByAid(HttpServletRequest request, HttpServletResponse response) {
+
+        System.out.println("进入到了getRemarkListByAid的控制台");
+
+        String activityId = request.getParameter("activityId");
+
+        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+
+        List<ActivityRemark> arList = as.getRemarkListByAid(activityId);
+
+        PrintJson.printJsonObj(response ,arList);
+    }
+
 
     private void detail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         System.out.println("进入到 detail控制台了");
-        request.getRequestDispatcher("workbench/activity/detail.jsp").forward(request, response);
+
+        String aid = request.getParameter("id");
+
+        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
+
+        Activity activity = as.detail(aid);
+
+        request.setAttribute("activity", activity);
+
+        request.getRequestDispatcher("/workbench/activity/detail.jsp").forward(request, response);
     }
 
     private void update(HttpServletRequest request, HttpServletResponse response) {

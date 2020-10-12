@@ -5,7 +5,9 @@ import cn.xsq.crm.exception.SaveException;
 import cn.xsq.crm.exception.UpdateException;
 import cn.xsq.crm.vo.PageVo;
 import cn.xsq.crm.workbench.domain.Activity;
+import cn.xsq.crm.workbench.domain.ActivityRemark;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ActivityService {
@@ -19,4 +21,8 @@ public interface ActivityService {
     Activity findByCheck(String id);
 
     boolean update(Activity a) throws UpdateException;
+
+    Activity detail(String aid);
+
+    List<ActivityRemark> getRemarkListByAid(String activityId);
 }

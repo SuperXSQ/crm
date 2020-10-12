@@ -8,6 +8,7 @@ import cn.xsq.crm.vo.PageVo;
 import cn.xsq.crm.workbench.dao.ActivityDao;
 import cn.xsq.crm.workbench.dao.ActivityRemarkDao;
 import cn.xsq.crm.workbench.domain.Activity;
+import cn.xsq.crm.workbench.domain.ActivityRemark;
 import cn.xsq.crm.workbench.service.ActivityService;
 
 import java.util.List;
@@ -93,5 +94,19 @@ public class ActivityServiceImpl implements ActivityService {
         }
 
         return true;
+    }
+
+    @Override
+    public Activity detail(String aid) {
+
+        return activityDao.detail(aid);
+
+    }
+
+    @Override
+    public List<ActivityRemark> getRemarkListByAid(String activityId) {
+
+        return activityRemarkDao.getRemarkListByAid(activityId);
+
     }
 }
