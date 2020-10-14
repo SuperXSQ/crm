@@ -28,6 +28,10 @@
     <url-pattern>/workbench/activity/update.do</url-pattern>
     <url-pattern>/workbench/activity/detail.do</url-pattern>
     <url-pattern>/workbench/activity/getRemarkListByAid.do</url-pattern>
+    <url-pattern>/workbench/activity/deleteActivityRemark.do</url-pattern>
+    <url-pattern>/workbench/activity/addRemark.do</url-pattern>
+    <url-pattern>/workbench/activity/getRemarkById.do</url-pattern>
+    <url-pattern>/workbench/activity/editActivityRemark.do</url-pattern>
   </servlet-mapping>
 
   <!--过滤器-->

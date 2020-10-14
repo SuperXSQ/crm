@@ -109,4 +109,54 @@ public class ActivityServiceImpl implements ActivityService {
         return activityRemarkDao.getRemarkListByAid(activityId);
 
     }
+
+    @Override
+    public boolean deleteActivityRemark(String activityRemarkId) {
+
+        boolean flag = false;
+
+        int count = activityRemarkDao.deleteById(activityRemarkId);
+
+        if (count == 1){
+            flag = true;
+        }
+
+        return flag;
+    }
+
+    @Override
+    public boolean addRemark(ActivityRemark ar) {
+
+        boolean flag = false;
+
+        int count = activityRemarkDao.addRemark(ar);
+
+        if (count == 1){
+            flag = true;
+        }
+
+        return flag;
+    }
+
+    @Override
+    public ActivityRemark getRemarkById(String id) {
+
+        ActivityRemark ar = activityRemarkDao.getRemarkById(id);
+
+        return ar;
+    }
+
+    @Override
+    public boolean editActivityRemark(ActivityRemark ar) {
+
+        boolean flag = false;
+
+        int count = activityRemarkDao.editActivityRemark(ar);
+
+        if (count == 1){
+            flag = true;
+        }
+
+        return  flag;
+    }
 }

@@ -25,4 +25,12 @@ public interface ActivityService {
     Activity detail(String aid);
 
     List<ActivityRemark> getRemarkListByAid(String activityId);
+
+    boolean deleteActivityRemark(String activityRemarkId);
+
+    boolean addRemark(ActivityRemark ar);
+
+    ActivityRemark getRemarkById(String id);
+
+    boolean editActivityRemark(ActivityRemark ar);
 }

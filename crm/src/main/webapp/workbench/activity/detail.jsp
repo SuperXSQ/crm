@@ -65,8 +65,77 @@
             $(this).children("div").children("div").hide();
         })
 
+        //点击保存添加备注信息，并且添加div标签显示于列表
+        $("#save-btn").click(function () {
+
+            var noteContent = $.trim($("#remark").val());
+
+            if (noteContent != null && noteContent != "") {
+
+                $.ajax({
+
+                    url : "workbench/activity/addRemark.do",
+                    dataType : "json",
+                    type : "post",
+                    data : {
+                        "noteContent" : noteContent,
+                        "activityId" : "${activity.id}"
+                    },
+                    success : function (data) {
+                        /*
+                            {"success":true/false, "id":""}
+                         */
+
+                        if (data.success){
+
+                            $.ajax({
+
+                                url : "workbench/activity/getRemarkById.do",
+                                dataType : "json",
+                                type : "get",
+                                data : {
+                                    "id": data.id
+                                },
+                                success : function (r) {
+
+                                    /*
+                                        {"id" : "","noteContent" : "", "createTime" : ""...}
+                                     */
+
+                                    //然后用返回的数据拼接before追加备注列表
+                                    var rhtml = "";
+
+                                    rhtml += '<div id="'+r.id+'" class="remarkDiv" style="height: 60px;">';
+                                    rhtml += '<img title='+ (r.editFlag==0 ? r.createBy : r.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+                                    rhtml += '<div style="position: relative; top: -40px; left: 40px;" >';
+                                    rhtml += '<h5 id="r'+r.id+'">'+r.noteContent+'</h5>';
+                                    rhtml += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (r.editFlag==0 ? r.createTime : r.editTime) +' 由'+ (r.editFlag==0 ? r.createBy : r.editBy) +'</small>';
+                                    rhtml += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
+                                    rhtml += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ r.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
+                                    rhtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                                    rhtml += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ r.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
+                                    rhtml += '</div>';
+                                    rhtml += '</div>';
+                                    rhtml += '</div>';
+
+                                    //将标签追加进列表
+                                    $("#remarkDiv").before(rhtml);
+
+                                    //清空添加备注栏
+									$("#remark").val("");
+
+                                }
+                            })
+
+                        } else alert("添加备注失败。。。");
+                    }
+                })
+            }else alert("备注信息不能为空！")
+        })
+
     });
 
+	//刷新备注列表的函数
 	function showRemarkList(){
 
 		$.ajax({
@@ -86,16 +155,18 @@
 
 				$.each(data, function (i,n) {
 
-					html += '<div class="remarkDiv" style="height: 60px;">';
-					html += '<img title='+ (n.editFlag==0 ? n.createTime : n.editTime)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+				    //为单个备注div添加id  采用此条remark的id作为动态id
+					html += '<div id="'+n.id+'" class="remarkDiv" style="height: 60px;">';
+					html += '<img title='+ (n.editFlag==0 ? n.createBy : n.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
 					html += '<div style="position: relative; top: -40px; left: 40px;" >';
-					html += '<h5>'+n.noteContent+'</h5>';
+					html += '<h5 id="r'+n.id+'">'+n.noteContent+'</h5>';
 					html += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (n.editFlag==0 ? n.createTime : n.editTime) +' 由'+ (n.editFlag==0 ? n.createBy : n.editBy) +'</small>';
 					html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
-					html += '<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
+					//                         href="javascript:void(0);"禁用超链接 只能触发事件                                                                                       #FF0000（R[FF]G[00]B[00]，所以为红色）
+					html += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ n.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
 					html += '&nbsp;&nbsp;&nbsp;&nbsp;';
-                    //动态拼接的没法为单个取id，所以直接在标签对中绑定事件
-					html += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ n.id +'\')" ><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
+                    //动态拼接的没法为单个元素标签取id，所以直接在标签对中绑定事件
+					html += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ n.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
 					html += '</div>';
 					html += '</div>';
 					html += '</div>';
@@ -109,8 +180,115 @@
 		})
 	}
 
+	//备注删除
 	function deleteActivityRemark(id) {
         alert(id);
+
+        $.ajax({
+
+            url : "workbench/activity/deleteActivityRemark.do",
+            dataType : "json",
+            type : "post",
+            data : {
+                "activityRemarkId":id
+            },
+            success : function (data) {
+
+                /*
+                    {"success" : true/false}
+                 */
+                if (data.success) {
+                    alert("删除备注成功！");
+
+                    //刷新备注列表
+                    //因为使用的是before函数，所以是追加标签 不会清空原本的列表标签
+                    //showRemarkList();
+                    //所以应该点击删除按钮删除成功后，把需要删除的标签删掉即可 首先为标签动态起id
+                    $("#" + id).remove();
+
+                }else alert("删除备注失败！")
+            }
+        })
+    }
+
+    //修改备注
+    function editActivityRemark(id) {
+
+		$("#editRemarkModal").modal("show");
+
+		$("#remarkId").val(id);
+
+		$("#noteContent").val($("#r"+id).html());
+
+		$("#updateRemarkBtn").click(function () {
+
+            var noteContent = ($.trim($("#noteContent").val()));
+			
+			if (noteContent != ""){
+
+				//发送ajax请求更新后台数据
+				$.ajax({
+
+					url: "workbench/activity/editActivityRemark.do",
+					dataType: "json",
+					type: "post",
+					data: {
+						"id" : $("#remarkId").val(),
+						"noteContent" : noteContent
+					},
+					success: function (data) {
+						/*
+							{"success":true/false}
+                        */
+						if (data.success){
+
+							//清空备注内容 关闭模态窗口并更新列表
+							$("#noteContent").val("");
+							$("#editRemarkModal").modal("hide");
+
+							//更新列表
+							$.ajax({
+
+								url: "workbench/activity/getRemarkById.do",
+								dataType: "json",
+								type: "get",
+								data: {
+									"id": $("#remarkId").val(),
+								},
+								success: function (d) {
+									/*
+                                        {"id" : "","noteContent" : "", "createTime" : ""...}
+									 */
+
+									//删除原来的 添加修改后的
+									//1.删除原来的
+									$("#"+$("#remarkId").val()).remove();
+
+									//2.添加修改后的
+									var h = "";
+
+									h += '<div id="'+d.id+'" class="remarkDiv" style="height: 60px;">';
+									h += '<img title='+ (d.editFlag==0 ? d.createBy : d.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+									h += '<div style="position: relative; top: -40px; left: 40px;" >';
+									h += '<h5 id="r'+d.id+'">'+d.noteContent+'</h5>';
+									h += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (d.editFlag==0 ? d.createTime : d.editTime) +' 由'+ (d.editFlag==0 ? d.createBy : d.editBy) +'</small>';
+									h += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
+									h += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ d.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
+									h += '&nbsp;&nbsp;&nbsp;&nbsp;';
+									h += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ d.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
+									h += '</div>';
+									h += '</div>';
+									h += '</div>';
+
+									$("#remarkDiv").before(h);
+								}
+							})
+
+						} else alert("更新备注失败！")
+					}
+				})
+			} else alert("备注信息不能为空！")
+		})
     }
 	
 </script>
@@ -120,7 +298,7 @@
 	
 	<!-- 修改市场活动备注的模态窗口 -->
 	<div class="modal fade" id="editRemarkModal" role="dialog">
-		<%-- 备注的id --%>
+		<%-- 备注的id 隐藏域 --%>
 		<input type="hidden" id="remarkId">
         <div class="modal-dialog" role="document" style="width: 40%;">
             <div class="modal-content">
@@ -148,6 +326,7 @@
         </div>
     </div>
 
+    <%--
     <!-- 修改市场活动的模态窗口 -->
     <div class="modal fade" id="editActivityModal" role="dialog">
         <div class="modal-dialog" role="document" style="width: 85%;">
@@ -212,6 +391,7 @@
             </div>
         </div>
     </div>
+    --%>
 
 	<!-- 返回按钮 -->
 	<div style="position: relative; top: 35px; left: 10px;">
@@ -317,7 +497,7 @@
 				<textarea id="remark" class="form-control" style="width: 850px; resize : none;" rows="2"  placeholder="添加备注..."></textarea>
 				<p id="cancelAndSaveBtn" style="position: relative;left: 737px; top: 10px; display: none;">
 					<button id="cancelBtn" type="button" class="btn btn-default">取消</button>
-					<button type="button" class="btn btn-primary">保存</button>
+					<button type="button" class="btn btn-primary" id="save-btn">保存</button>
 				</p>
 			</form>
 		</div>
