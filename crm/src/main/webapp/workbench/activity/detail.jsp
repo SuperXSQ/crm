@@ -214,11 +214,14 @@
     //修改备注
     function editActivityRemark(id) {
 
-		$("#editRemarkModal").modal("show");
-
+		//将模态窗口中的隐藏域赋id值
 		$("#remarkId").val(id);
 
+		//将列表里的备注信息赋到修改模态窗口中的文本域
 		$("#noteContent").val($("#r"+id).html());
+
+		//打开模态窗口
+		$("#editRemarkModal").modal("show");
 
 		$("#updateRemarkBtn").click(function () {
 
