@@ -125,11 +125,11 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public boolean addRemark(ActivityRemark ar) {
+    public boolean saveRemark(ActivityRemark ar) {
 
         boolean flag = false;
 
-        int count = activityRemarkDao.addRemark(ar);
+        int count = activityRemarkDao.saveRemark(ar);
 
         if (count == 1){
             flag = true;
@@ -138,20 +138,13 @@ public class ActivityServiceImpl implements ActivityService {
         return flag;
     }
 
-    @Override
-    public ActivityRemark getRemarkById(String id) {
-
-        ActivityRemark ar = activityRemarkDao.getRemarkById(id);
-
-        return ar;
-    }
 
     @Override
     public boolean editActivityRemark(ActivityRemark ar) {
 
         boolean flag = false;
 
-        int count = activityRemarkDao.editActivityRemark(ar);
+        int count = activityRemarkDao.updateRemark(ar);
 
         if (count == 1){
             flag = true;

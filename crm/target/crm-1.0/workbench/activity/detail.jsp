@@ -74,7 +74,7 @@
 
                 $.ajax({
 
-                    url : "workbench/activity/addRemark.do",
+                    url : "workbench/activity/saveRemark.do",
                     dataType : "json",
                     type : "post",
                     data : {
@@ -83,54 +83,82 @@
                     },
                     success : function (data) {
                         /*
-                            {"success":true/false, "id":""}
+                            {"success":true/false, "ar":{备注}}
                          */
 
                         if (data.success){
 
-                            $.ajax({
+                            //然后用返回的数据拼接before追加备注列表
+                            var html = "";
 
-                                url : "workbench/activity/getRemarkById.do",
-                                dataType : "json",
-                                type : "get",
-                                data : {
-                                    "id": data.id
-                                },
-                                success : function (r) {
+                            html += '<div id="'+data.ar.id+'" class="remarkDiv" style="height: 60px;">';
+                            html += '<img id="i'+data.ar.id+'" title='+ (data.ar.createBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+                            html += '<div style="position: relative; top: -40px; left: 40px;" >';
+                            html += '<h5 id="h'+data.ar.id+'">'+data.ar.noteContent+'</h5>';
+                            html += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;" id="s'+data.ar.id+'"> '+ (data.ar.createTime) +' 由'+ (data.ar.createBy) +'</small>';
+                            html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
+                            html += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ data.ar.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
+                            html += '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            html += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ data.ar.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</div>';
 
-                                    /*
-                                        {"id" : "","noteContent" : "", "createTime" : ""...}
-                                     */
+                            //将标签追加进列表
+                            $("#remarkDiv").before(html);
 
-                                    //然后用返回的数据拼接before追加备注列表
-                                    var rhtml = "";
-
-                                    rhtml += '<div id="'+r.id+'" class="remarkDiv" style="height: 60px;">';
-                                    rhtml += '<img title='+ (r.editFlag==0 ? r.createBy : r.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
-                                    rhtml += '<div style="position: relative; top: -40px; left: 40px;" >';
-                                    rhtml += '<h5 id="r'+r.id+'">'+r.noteContent+'</h5>';
-                                    rhtml += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (r.editFlag==0 ? r.createTime : r.editTime) +' 由'+ (r.editFlag==0 ? r.createBy : r.editBy) +'</small>';
-                                    rhtml += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
-                                    rhtml += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ r.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
-                                    rhtml += '&nbsp;&nbsp;&nbsp;&nbsp;';
-                                    rhtml += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ r.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
-                                    rhtml += '</div>';
-                                    rhtml += '</div>';
-                                    rhtml += '</div>';
-
-                                    //将标签追加进列表
-                                    $("#remarkDiv").before(rhtml);
-
-                                    //清空添加备注栏
-									$("#remark").val("");
-
-                                }
-                            })
+                            //清空添加备注栏
+                            $("#remark").val("");
 
                         } else alert("添加备注失败。。。");
                     }
                 })
             }else alert("备注信息不能为空！")
+        })
+
+        //点击修改模态窗口中的更新 触发事件修改备注信息
+        $("#updateRemarkBtn").click(function () {
+
+            var noteContent = ($.trim($("#noteContent").val()));
+
+            var id = $("#remarkId").val();
+
+            if (noteContent != ""){
+
+                //发送ajax请求更新后台数据
+                $.ajax({
+
+                    url: "workbench/activity/editActivityRemark.do",
+                    dataType: "json",
+                    type: "post",
+                    data: {
+                        "id" : id,
+                        "noteContent" : noteContent
+                    },
+                    success: function (data) {
+                        /*
+                            {"success":true/false , "ar":{备注}}
+                        */
+                        if (data.success){
+
+                            alert("更新列表成功");
+                            //更新列表
+                            //1.为img标签中的 title赋值 data.ar.editBy
+                            $("#i"+id).attr({title:data.ar.editBy});
+                            //2.修改noteContent备注内容
+                            $("#h"+id).html(data.ar.noteContent);
+                            //3.更改修改时间和修改人
+                            $("#s"+id).html((data.ar.editTime) +' 由'+ (data.ar.editBy));
+
+
+                            //清空备注内容 关闭模态窗口
+                            $("#noteContent").val("");
+                            $("#editRemarkModal").modal("hide");
+
+                        } else alert("更新备注失败！")
+                    }
+                })
+            } else alert("备注信息不能为空！")
         })
 
     });
@@ -157,10 +185,10 @@
 
 				    //为单个备注div添加id  采用此条remark的id作为动态id
 					html += '<div id="'+n.id+'" class="remarkDiv" style="height: 60px;">';
-					html += '<img title='+ (n.editFlag==0 ? n.createBy : n.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+					html += '<img id="i'+n.id+'" title='+ (n.editFlag==0 ? n.createBy : n.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
 					html += '<div style="position: relative; top: -40px; left: 40px;" >';
-					html += '<h5 id="r'+n.id+'">'+n.noteContent+'</h5>';
-					html += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (n.editFlag==0 ? n.createTime : n.editTime) +' 由'+ (n.editFlag==0 ? n.createBy : n.editBy) +'</small>';
+					html += '<h5 id="h'+n.id+'">'+n.noteContent+'</h5>';
+					html += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;" id="s'+n.id+'"> '+ (n.editFlag==0 ? n.createTime : n.editTime) +' 由'+ (n.editFlag==0 ? n.createBy : n.editBy) +'</small>';
 					html += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
 					//                         href="javascript:void(0);"禁用超链接 只能触发事件                                                                                       #FF0000（R[FF]G[00]B[00]，所以为红色）
 					html += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ n.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
@@ -214,81 +242,14 @@
     //修改备注
     function editActivityRemark(id) {
 
-		$("#editRemarkModal").modal("show");
-
+		//将模态窗口中的隐藏域赋id值
 		$("#remarkId").val(id);
 
-		$("#noteContent").val($("#r"+id).html());
+		//将列表里的备注信息赋到修改模态窗口中的文本域
+		$("#noteContent").val($("#h"+id).html());
 
-		$("#updateRemarkBtn").click(function () {
-
-            var noteContent = ($.trim($("#noteContent").val()));
-			
-			if (noteContent != ""){
-
-				//发送ajax请求更新后台数据
-				$.ajax({
-
-					url: "workbench/activity/editActivityRemark.do",
-					dataType: "json",
-					type: "post",
-					data: {
-						"id" : $("#remarkId").val(),
-						"noteContent" : noteContent
-					},
-					success: function (data) {
-						/*
-							{"success":true/false}
-                        */
-						if (data.success){
-
-							//清空备注内容 关闭模态窗口并更新列表
-							$("#noteContent").val("");
-							$("#editRemarkModal").modal("hide");
-
-							//更新列表
-							$.ajax({
-
-								url: "workbench/activity/getRemarkById.do",
-								dataType: "json",
-								type: "get",
-								data: {
-									"id": $("#remarkId").val(),
-								},
-								success: function (d) {
-									/*
-                                        {"id" : "","noteContent" : "", "createTime" : ""...}
-									 */
-
-									//删除原来的 添加修改后的
-									//1.删除原来的
-									$("#"+$("#remarkId").val()).remove();
-
-									//2.添加修改后的
-									var h = "";
-
-									h += '<div id="'+d.id+'" class="remarkDiv" style="height: 60px;">';
-									h += '<img title='+ (d.editFlag==0 ? d.createBy : d.editBy)+' src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
-									h += '<div style="position: relative; top: -40px; left: 40px;" >';
-									h += '<h5 id="r'+d.id+'">'+d.noteContent+'</h5>';
-									h += '<font color="gray">市场活动</font> <font color="gray">-</font> <b>${activity.name}</b> <small style="color: gray;"> '+ (d.editFlag==0 ? d.createTime : d.editTime) +' 由'+ (d.editFlag==0 ? d.createBy : d.editBy) +'</small>';
-									h += '<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">';
-									h += '<a class="myHref" href="javascript:void(0);" onclick= "editActivityRemark(\''+ d.id +'\')"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
-									h += '&nbsp;&nbsp;&nbsp;&nbsp;';
-									h += '<a class="myHref" href="javascript:void(0);" onclick= "deleteActivityRemark(\''+ d.id +'\')"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: red;"></span></a>';
-									h += '</div>';
-									h += '</div>';
-									h += '</div>';
-
-									$("#remarkDiv").before(h);
-								}
-							})
-
-						} else alert("更新备注失败！")
-					}
-				})
-			} else alert("备注信息不能为空！")
-		})
+		//打开模态窗口
+		$("#editRemarkModal").modal("show");
     }
 	
 </script>

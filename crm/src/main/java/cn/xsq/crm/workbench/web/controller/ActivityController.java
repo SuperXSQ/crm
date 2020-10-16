@@ -70,13 +70,10 @@ public class ActivityController extends HttpServlet {
             deleteActivityRemark(request, response);
         }
 
-        if ("/workbench/activity/addRemark.do".equals(path)){
-            addRemark(request, response);
+        if ("/workbench/activity/saveRemark.do".equals(path)){
+            saveRemark(request, response);
         }
 
-        if ("/workbench/activity/getRemarkById.do".equals(path)){
-            getRemarkById(request, response);
-        }
 
         if ("/workbench/activity/editActivityRemark.do".equals(path)){
             editActivityRemark(request, response);
@@ -103,26 +100,17 @@ public class ActivityController extends HttpServlet {
         ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
         boolean flag = as.editActivityRemark(ar);
 
-        PrintJson.printJsonFlag(response, flag);
+        Map<String,Object> m = new HashMap<>();
+        m.put("success", flag);
+        m.put("ar", ar);
+
+        PrintJson.printJsonObj(response, m);
     }
 
-    private void getRemarkById(HttpServletRequest request, HttpServletResponse response) {
 
-        System.out.println("进入到getRemarkById的控制器了");
+    private void saveRemark(HttpServletRequest request, HttpServletResponse response) {
 
-        String id = request.getParameter("id");
-
-        ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
-
-        ActivityRemark ar = as.getRemarkById(id);
-
-        PrintJson.printJsonObj(response, ar);
-
-    }
-
-    private void addRemark(HttpServletRequest request, HttpServletResponse response) {
-
-        System.out.println("进入到addRemark的控制器");
+        System.out.println("进入到saveRemark的控制器");
 
         String id = UUIDUtil.getUUID();
         String noteContent = request.getParameter("noteContent");
@@ -141,11 +129,11 @@ public class ActivityController extends HttpServlet {
 
         ActivityService as = (ActivityService) ServiceFactory.getService(new ActivityServiceImpl());
 
-        boolean flag = as.addRemark(ar);
+        boolean flag = as.saveRemark(ar);
 
         Map<String,Object> m = new HashMap<>();
         m.put("success", flag);
-        m.put("id", id);
+        m.put("ar", ar);
 
         PrintJson.printJsonObj(response, m);
     }

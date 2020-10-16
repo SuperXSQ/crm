@@ -5,7 +5,7 @@
 
 <mapper namespace="cn.xsq.crm.workbench.dao.ActivityRemarkDao">
 
-    <update id="editActivityRemark">
+    <update id="updateRemark">
 
         update tbl_activity_remark set
             noteContent = #{noteContent},
@@ -18,14 +18,7 @@
     </update>
 
 
-	<select id="getRemarkById" resultType="ActivityRemark">
-
-		select * from tbl_activity_remark where id = #{id}
-
-	</select>
-
-
-	<insert id="addRemark">
+	<insert id="saveRemark">
 
 		insert into tbl_activity_remark (
 			id,
