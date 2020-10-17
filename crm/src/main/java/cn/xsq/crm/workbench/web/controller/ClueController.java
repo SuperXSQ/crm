@@ -34,10 +34,21 @@ public class ClueController extends HttpServlet {
 
         String path = request.getServletPath();
 
-        if ("/workbench/clue/xxx.do".equals(path)){
-            //xxx(request, response);
+        if ("/workbench/clue/findAll.do".equals(path)){
+            findAll(request, response);
         }
 
+    }
+
+    private void findAll(HttpServletRequest request, HttpServletResponse response) {
+
+        System.out.println("进入到findAll，获取所有者列表");
+
+        UserService us = (UserService) ServiceFactory.getService(new UserServiceImpl());
+
+        List<User> users = us.findAll();
+
+        PrintJson.printJsonObj(response, users);
     }
 
 }
