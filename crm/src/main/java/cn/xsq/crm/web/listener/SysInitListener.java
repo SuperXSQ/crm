@@ -8,9 +8,7 @@ import cn.xsq.crm.utils.ServiceFactory;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /*
@@ -51,5 +49,27 @@ public class SysInitListener implements ServletContextListener {
 
             application.setAttribute(key, map.get(key));
         }
+
+
+        //在服务器启动阶段，解析Stage2Possibility.properties属性文件，将解析的数据存放到Map集合当中
+        //根据阶段 动态显示可能性
+
+        ResourceBundle bundle = ResourceBundle.getBundle("Stage2Possibility");
+
+        Enumeration<String> keys = bundle.getKeys();
+
+        Map<String, String> pMap = new HashMap<>();
+
+        while (keys.hasMoreElements()){
+
+            String key = keys.nextElement();
+
+            String value = bundle.getString(key);
+
+            pMap.put(key, value);
+        }
+
+        application.setAttribute("pMap", pMap);
+
     }
 }

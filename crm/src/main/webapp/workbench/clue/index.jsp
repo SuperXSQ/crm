@@ -22,6 +22,20 @@
 
 	$(function(){
 
+		//日期模块
+		$(".time").datetimepicker({
+			minView: "month",
+			language:  'zh-CN',
+			format: 'yyyy-mm-dd',
+			autoclose: true,
+			todayBtn: true,
+			pickerPosition: "top-left"
+		});
+
+		//刷新线索列表
+		pageList(1, 2);
+
+		//为创建按钮绑定事件
 		$("#addBtn").click(function () {
 
 			//过后台取所有者
@@ -37,10 +51,13 @@
 						html += "<option value='"+n.id+"'>"+n.name+"</option>";
 					})
 
-					$("#create-clueOwner").html(html);
+					$("#create-owner").html(html);
 					//默认为当前用户
-					$("#create-clueOwner").val("${user.id}");
-
+					$("#create-owner").val("${user.id}");
+					//其他3个下拉框让他们默认是空白
+					$("#create-appellation").val("");
+					$("#create-state").val("");
+					$("#create-source").val("");
 
 					/*
 					//我这个写法看起来没什么问题！
@@ -66,9 +83,109 @@
 
 
 		})
+
+		//点击保存  创建线索
+		$("#saveBtn").click(function () {
+
+			$.ajax({
+				url: "workbench/clue/save.do",
+				dataType: "json",
+				type: "post",
+				data: {
+
+					"fullname" : $.trim($("#create-fullname").val()),
+					"appellation" : $.trim($("#create-appellation").val()),
+					"owner" : $.trim($("#create-owner").val()),
+					"company" : $.trim($("#create-company").val()),
+					"job" : $.trim($("#create-job").val()),
+					"email" : $.trim($("#create-email").val()),
+					"phone" : $.trim($("#create-phone").val()),
+					"website" : $.trim($("#create-website").val()),
+					"mphone" : $.trim($("#create-mphone").val()),
+					"state" : $.trim($("#create-state").val()),
+					"source" : $.trim($("#create-source").val()),
+					"description" : $.trim($("#create-description").val()),
+					"contactSummary" : $.trim($("#create-contactSummary").val()),
+					"nextContactTime" : $.trim($("#create-nextContactTime").val()),
+					"address" : $.trim($("#create-address").val())
+
+				},
+				success: function (data) {
+					/*
+						{success:true/false}
+					 */
+					if (data.success){
+						//保存成功
+						alert("保存成功！");
+						//清空表单
+						$("#form")[0].reset();
+
+						//1.刷新线索列表
+
+						//2.关闭模态窗口
+						$("#createClueModal").modal("hide");
+
+					} else alert("保存失败！");
+				}
+			})
+		})
+
 		
 		
 	});
+
+	function pageList(pageNo, pageSize) {
+
+		$.ajax({
+			url: "workbench/clue/pageList.do",
+			dataType: "json",
+			type: "post",
+			data: {
+				"fullname" : $.trim($("#search-fullname").val()),
+				"owner" : $.trim($("#search-owner").val()),
+				"company" : $.trim($("#search-company").val()),
+				"phone" : $.trim($("#search-phone").val()),
+				"mphone" : $.trim($("#search-mphone").val()),
+				"state" : $("#search-state").val(),
+				"source" : $("#search-source").val(),
+				"pageNo" : pageNo,
+				"pageSize" : pageSize
+			},
+			success: function (data) {
+
+				/*
+					{
+						"total":"",
+						"dataList":"{
+									"id":"",
+									"fullname":"",
+									"company":"",
+									...
+								}"
+					}
+				 */
+
+				var html = "";
+
+				$.each(data.dataList, function (i,n) {
+
+					html += '<tr>';
+					html += '<td><input type="checkbox" value="'+n.id+'"/></td>';
+					html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/clue/detail.do?id='+n.id+'\';">'+ n.fullname + n.appellation +'</a></td>';
+					html += '<td>'+n.company+'</td>';
+					html += '<td>'+n.phone+'</td>';
+					html += '<td>'+n.mphone+'</td>';
+					html += '<td>'+n.source+'</td>';
+					html += '<td>'+n.owner+'</td>';
+					html += '<td>'+n.state+'</td>';
+					html += '</tr>';
+
+				})
+
+				$("#tbody").html(html);
+			}
+		})
+	}
 	
 </script>
 </head>
@@ -85,12 +202,12 @@
 					<h4 class="modal-title" id="myModalLabel">创建线索</h4>
 				</div>
 				<div class="modal-body">
-					<form class="form-horizontal" role="form">
+					<form class="form-horizontal" role="form" id="form">
 					
 						<div class="form-group">
 							<label for="create-clueOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="create-clueOwner">
+								<select class="form-control" id="create-owner">
 								 <%-- <option>zhangsan</option>
 								  <option>lisi</option>
 								  <option>wangwu</option>--%>
@@ -105,7 +222,7 @@
 						<div class="form-group">
 							<label for="create-call" class="col-sm-2 control-label">称呼</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="create-call">
+								<select class="form-control" id="create-appellation">
 								  <%--<option></option>
 								  <option>先生</option>
 								  <option>夫人</option>
@@ -113,7 +230,6 @@
 								  <option>博士</option>
 								  <option>教授</option>--%>
 
-									<option></option>
 									<c:forEach items="${appellationList}" var="a">
 										<option value="${a.value}">${a.text}</option>
 									</c:forEach>
@@ -122,7 +238,7 @@
 							</div>
 							<label for="create-surname" class="col-sm-2 control-label">姓名<span style="font-size: 15px; color: red;">*</span></label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="create-surname">
+								<input type="text" class="form-control" id="create-fullname">
 							</div>
 						</div>
 						
@@ -155,8 +271,8 @@
 							</div>
 							<label for="create-status" class="col-sm-2 control-label">线索状态</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<select class="form-control" id="create-status">
-								  <option></option>
+								<select class="form-control" id="create-state">
+
 								  <%--<option>试图联系</option>
 								  <option>将来联系</option>
 								  <option>已联系</option>
@@ -176,7 +292,7 @@
 							<label for="create-source" class="col-sm-2 control-label">线索来源</label>
 							<div class="col-sm-10" style="width: 300px;">
 								<select class="form-control" id="create-source">
-								  <option></option>
+
 								  <%--<option>广告</option>
 								  <option>推销电话</option>
 								  <option>员工介绍</option>
@@ -203,7 +319,7 @@
 						<div class="form-group">
 							<label for="create-describe" class="col-sm-2 control-label">线索描述</label>
 							<div class="col-sm-10" style="width: 81%;">
-								<textarea class="form-control" rows="3" id="create-describe"></textarea>
+								<textarea class="form-control" rows="3" id="create-description"></textarea>
 							</div>
 						</div>
 						
@@ -219,7 +335,7 @@
 							<div class="form-group">
 								<label for="create-nextContactTime" class="col-sm-2 control-label">下次联系时间</label>
 								<div class="col-sm-10" style="width: 300px;">
-									<input type="text" class="form-control" id="create-nextContactTime">
+									<input type="text" class="form-control time" id="create-nextContactTime">
 								</div>
 							</div>
 						</div>
@@ -239,7 +355,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">保存</button>
+					<button type="button" class="btn btn-primary" id="saveBtn">保存</button>
 				</div>
 			</div>
 		</div>
@@ -422,29 +538,30 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-fullname">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">公司</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-company">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">公司座机</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-phone">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">线索来源</div>
-					  <select class="form-control">
+					  <select class="form-control" id="search-source">
 					  	  <option></option>
+						  <%--
 					  	  <option>广告</option>
 						  <option>推销电话</option>
 						  <option>员工介绍</option>
@@ -458,7 +575,12 @@
 						  <option>交易会</option>
 						  <option>web下载</option>
 						  <option>web调研</option>
-						  <option>聊天</option>
+						  <option>聊天</option>--%>
+
+							  <c:forEach items="${sourceList}" var="s">
+								  <option value="${s.value}">${s.text}</option>
+							  </c:forEach>
+
 					  </select>
 				    </div>
 				  </div>
@@ -468,7 +590,7 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">所有者</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-owner">
 				    </div>
 				  </div>
 				  
@@ -477,27 +599,31 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">手机</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-mphone">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">线索状态</div>
-					  <select class="form-control">
+					  <select class="form-control" id="search-state">
 					  	<option></option>
+						  <%--
 					  	<option>试图联系</option>
 					  	<option>将来联系</option>
 					  	<option>已联系</option>
 					  	<option>虚假线索</option>
 					  	<option>丢失线索</option>
 					  	<option>未联系</option>
-					  	<option>需要条件</option>
+					  	<option>需要条件</option>--%>
+							<c:forEach items="${clueStateList}" var="c">
+								<option value="${c.value}">${c.text}</option>
+							</c:forEach>
 					  </select>
 				    </div>
 				  </div>
 
-				  <button type="submit" class="btn btn-default">查询</button>
+				  <button type="button" class="btn btn-default" id="searchBtn">查询</button>
 				  
 				</form>
 			</div>
@@ -524,8 +650,8 @@
 							<td>线索状态</td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody id="tbody">
+						<%--<tr>
 							<td><input type="checkbox" /></td>
 							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='workbench/clue/detail.jsp';">李四先生</a></td>
 							<td>动力节点</td>
@@ -544,7 +670,7 @@
                             <td>广告</td>
                             <td>zhangsan</td>
                             <td>已联系</td>
-                        </tr>
+                        </tr>--%>
 					</tbody>
 				</table>
 			</div>

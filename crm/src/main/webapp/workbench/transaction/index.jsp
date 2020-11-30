@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
 	String basePath = request.getScheme() + "://" + request.getServerName() + ":" + 	request.getServerPort() + request.getContextPath() + "/";
@@ -20,10 +21,70 @@
 <script type="text/javascript">
 
 	$(function(){
-		
-		
+
+		//加载页面后 刷新交易列表
+		pageList(1,2);
+
+		//点击搜索
+		$("#searchBtn").click(function () {
+
+			pageList(1,2);
+		})
 		
 	});
+
+	function pageList(pageNo, pageSize) {
+
+		$.ajax({
+			url: "workbench/tran/pageList.do",
+			dataType: "json",
+			type: "post",
+			data: {
+				"owner" : $.trim($("#search-owner").val()),
+				"name" : $.trim($("#search-name").val()),
+				"customerName" : $.trim($("#search-customerName").val()),
+				"stage" : $("#search-stage").val(),
+				"transactionType" : $("#search-transactionType").val(),
+				"source" : $("#search-source").val(),
+				"contactsName" : $.trim($("#search-contactsName").val()),
+				"pageNo" : pageNo,
+				"pageSize" : pageSize
+			},
+			success: function (data) {
+
+				/*
+					{
+						"total":"",
+						"dataList":"{
+									"id":"",
+									"fullname":"",
+									"company":"",
+									...
+									}"
+					}
+				 */
+
+				var html = "";
+
+				$.each(data.dataList, function (i,n) {
+
+					html += '<tr>';
+					html += '<td><input type="checkbox" value="'+n.id+'"/></td>';
+					html += '<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/tran/detail.do?id='+n.id+'\';">' + n.customerId + '-' + n.name + '</a></td>';
+					html += '<td>'+n.customerId+'</td>';
+					html += '<td>'+n.stage+'</td>';
+					html += '<td>'+n.type+'</td>';
+					html += '<td>'+n.owner+'</td>';
+					html += '<td>'+n.source+'</td>';
+					html += '<td>'+n.contactsId+'</td>';
+					html += '</tr>';
+
+				})
+
+				$("#tbody").html(html);
+			}
+		})
+	}
 	
 </script>
 </head>
@@ -49,21 +110,21 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">所有者</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-owner">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-name">
 				    </div>
 				  </div>
 				  
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">客户名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-customerName">
 				    </div>
 				  </div>
 				  
@@ -72,8 +133,9 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">阶段</div>
-					  <select class="form-control">
+					  <select class="form-control" id="search-stage">
 					  	<option></option>
+						  <%--
 					  	<option>资质审查</option>
 					  	<option>需求分析</option>
 					  	<option>价值建议</option>
@@ -82,7 +144,11 @@
 					  	<option>谈判/复审</option>
 					  	<option>成交</option>
 					  	<option>丢失的线索</option>
-					  	<option>因竞争丢失关闭</option>
+					  	<option>因竞争丢失关闭</option>--%>
+
+							<c:forEach items="${stageList}" var="s">
+							<option value="${s.value}">${s.text}</option>
+							</c:forEach>
 					  </select>
 				    </div>
 				  </div>
@@ -90,10 +156,16 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">类型</div>
-					  <select class="form-control">
+					  <select class="form-control" id="search-transactionType">
 					  	<option></option>
+						  <%--
 					  	<option>已有业务</option>
-					  	<option>新业务</option>
+					  	<option>新业务</option>--%>
+
+							<c:forEach items="${transactionTypeList}" var="t">
+								<option value="${t.value}">${t.text}</option>
+							</c:forEach>
+
 					  </select>
 				    </div>
 				  </div>
@@ -101,8 +173,9 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">来源</div>
-				      <select class="form-control" id="create-clueSource">
+				      <select class="form-control" id="search-source">
 						  <option></option>
+						  <%--
 						  <option>广告</option>
 						  <option>推销电话</option>
 						  <option>员工介绍</option>
@@ -116,7 +189,12 @@
 						  <option>交易会</option>
 						  <option>web下载</option>
 						  <option>web调研</option>
-						  <option>聊天</option>
+						  <option>聊天</option>--%>
+
+							  <c:forEach items="${sourceList}" var="s">
+								  <option value="${s.value}">${s.text}</option>
+							  </c:forEach>
+
 						</select>
 				    </div>
 				  </div>
@@ -124,17 +202,17 @@
 				  <div class="form-group">
 				    <div class="input-group">
 				      <div class="input-group-addon">联系人名称</div>
-				      <input class="form-control" type="text">
+				      <input class="form-control" type="text" id="search-contactsName">
 				    </div>
 				  </div>
 				  
-				  <button type="submit" class="btn btn-default">查询</button>
+				  <button type="button" class="btn btn-default" id="searchBtn">查询</button>
 				  
 				</form>
 			</div>
 			<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;top: 10px;">
 				<div class="btn-group" style="position: relative; top: 18%;">
-				  <button type="button" class="btn btn-primary" onclick="window.location.href='workbench/transaction/save.jsp';"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+				  <button type="button" class="btn btn-primary" onclick="window.location.href='workbench/tran/save.do';"><span class="glyphicon glyphicon-plus"></span> 创建</button>
 				  <button type="button" class="btn btn-default" onclick="window.location.href='workbench/transaction/edit.jsp';"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
 				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
@@ -155,8 +233,8 @@
 							<td>联系人名称</td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody id="tbody">
+						<%--<tr>
 							<td><input type="checkbox" /></td>
 							<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href='workbench/transaction/detail.jsp';">动力节点-交易01</a></td>
 							<td>动力节点</td>
@@ -175,7 +253,7 @@
                             <td>zhangsan</td>
                             <td>广告</td>
                             <td>李四</td>
-                        </tr>
+                        </tr>--%>
 					</tbody>
 				</table>
 			</div>

@@ -9,8 +9,19 @@ public class TranHistory {
 	private String createTime;
 	private String createBy;
 	private String tranId;
-	
-	public String getId() {
+
+    //增加possibility属性
+    private String possibility; //可能性
+
+    public String getPossibility() {
+        return possibility;
+    }
+
+    public void setPossibility(String possibility) {
+        this.possibility = possibility;
+    }
+
+    public String getId() {
 		return id;
 	}
 	public void setId(String id) {

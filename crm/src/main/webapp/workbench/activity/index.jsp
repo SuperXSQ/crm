@@ -313,13 +313,13 @@
 			        /*
 			        收到的数据格式
 			        {
-			            "total" : ""
+			            "total" : "",
                         "dataList" : {
                                    "id":"",
                                    "name":"",
                                    "owner":"",
                                    "startDate":"",
-                                   "endDate":"",
+                                   "endDate":""
                                     }
                      }
 

@@ -6,7 +6,7 @@
 <mapper namespace="cn.xsq.crm.settings.dao.DicValueDao">
 
     <select id="getByCode" resultType="DicValue">
-        select * from tbl_dic_value where typeCode = #{code}
+        select * from tbl_dic_value where typeCode = #{code} order by orderNo asc
     </select>
 	
 
